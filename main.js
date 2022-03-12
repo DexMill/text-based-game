@@ -57,6 +57,7 @@ let alligator = false;
 let alligatorStr = 0;
 let combat = false;
 let alligatorHealth = 10;
+let coins = 150;
 
 function process(inputText) {
   let outputText = "default";
@@ -112,8 +113,8 @@ defence: ${defense}
 
   if (charLoc === "Inn") {
     if (health < 10) {
-      health = health + 1;
-      outputText = `You have + 1 health.`;
+      health = 10;
+      outputText = `You have max health.`;
     }
   }
 
@@ -125,7 +126,7 @@ defence: ${defense}
 
     if (alligator === true) {
       outputText =
-        "You must either defeat the alligator or retreat before you may explore more";
+        "You must either defeat the alligator and gain 30 coins or retreat and lose 10 coins before you may explore more";
       return outputText;
     }
 
@@ -133,6 +134,7 @@ defence: ${defense}
 
     if (rand <= 3) {
       outputText = "You have found treasure!";
+      coins = coins + 10;
     } else if (rand > 3 && rand <= 5) {
       outputText = "You have found nothing :/";
     } else {
@@ -157,12 +159,15 @@ defence: ${defense}
       if (alligatorHealth === 0) {
         outputText += `\nYou've defeated the alligator!`;
         alligator = false;
+        coins = coins + 30;
       }
     }
 
     if (inputText === "/retreat") {
       outputText = "You retreat from the alligator!";
       alligator = false;
+      coins = coins - 10;
+      health = health - 1;
     }
   }
 
@@ -172,5 +177,5 @@ defence: ${defense}
 function updateAlwaysUp() {
   document.getElementById(
     "always-up"
-  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} <br /> Locatioin: ${charLoc}`;
+  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc}`;
 }
