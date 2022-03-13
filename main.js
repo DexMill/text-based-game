@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("text-updates").innerHTML = "";
         e.target.value = "";
       } else {
-        const outputText = process(e.target.value);
+        const outputText = process(e.target.value.trim());
         addTextUpdate(outputText);
         e.target.value = "";
       }
