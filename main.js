@@ -38,6 +38,7 @@ const SET_NAME = "/name ";
 const GOTO_LOC = "/goto ";
 const EXPLORE = "/explore";
 const EXPLORE_SHORT = "/e";
+const INVENTORY = "?i";
 
 let charName = "Adventurer";
 let charLoc = "Inn";
@@ -46,6 +47,10 @@ const dangerLevelOfLoc = {
   Inn: 0,
   Swamp: 5,
 };
+
+const treasures = ["Pearl", "Diamond", "a Alligator tooth"];
+
+const yourTreasures = [];
 
 let health = 10;
 let mana = 10;
@@ -114,7 +119,7 @@ defence: ${defense}
   if (charLoc === "Inn") {
     if (health < 10) {
       health = 10;
-      outputText = `You have max health.`;
+      outputText += `\nYou have max health.`;
     }
   }
 
@@ -130,18 +135,26 @@ defence: ${defense}
       return outputText;
     }
 
-    const rand = Math.random() * 10;
+    const randExplore = rand(0, 10);
 
-    if (rand <= 3) {
-      outputText = "You have found treasure!";
+    if (randExplore <= 4) {
+      const randTreasure = rand(0, 2);
+      const treasureYouFound = treasures[randTreasure];
+      yourTreasures.push(treasureYouFound);
+      outputText = `You have found ${treasureYouFound}!`;
       coins = coins + 10;
-    } else if (rand > 3 && rand <= 5) {
+    } else if (randExplore > 3 && rand <= 5) {
       outputText = "You have found nothing :/";
     } else {
       generateRandomAlligatorStr();
       outputText = `You have found something! An alligator with strength ${alligatorStr}!! Use /attack or /retreat`;
       alligator = true;
     }
+  }
+
+  if (inputText === INVENTORY) {
+    outputText = `Treasures: ${yourTreasures.join(", ")}
+    `;
   }
 
   if (alligator === true) {
@@ -160,6 +173,7 @@ defence: ${defense}
         outputText += `\nYou've defeated the alligator!`;
         alligator = false;
         coins = coins + 30;
+        yourTreasures.push(2);
       }
     }
 
@@ -177,5 +191,5 @@ defence: ${defense}
 function updateAlwaysUp() {
   document.getElementById(
     "always-up"
-  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc}`;
+  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc} `;
 }
