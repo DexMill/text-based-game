@@ -198,9 +198,9 @@ defence: ${defense}
     }
   }
 
-  if (inputText.startsWith("/upgrade")) {
+  if (inputText.startsWith("/u")) {
     const skillToUpgrade = inputText.split(" ")[1];
-    if (skillToUpgrade === "strength" && levelPoints >= 1) {
+    if (skillToUpgrade === "s" && levelPoints >= 1) {
       strength = strength + 1;
       levelPoints = levelPoints - 1;
     }
