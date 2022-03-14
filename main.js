@@ -63,6 +63,10 @@ let alligatorStr = 0;
 let combat = false;
 let alligatorHealth = 10;
 let coins = 150;
+let xp = 0;
+let level = 0;
+let levelPoints = 0;
+let neededXp = 10;
 
 function process(inputText) {
   let outputText = "default";
@@ -158,7 +162,7 @@ defence: ${defense}
   }
 
   if (alligator === true) {
-    if (inputText === "/attack") {
+    if (inputText === "/attack" || inputText === "/a") {
       outputText = "You attack an alligator.";
       alligatorHealth = alligatorHealth - strength;
 
@@ -173,7 +177,16 @@ defence: ${defense}
         outputText += `\nYou've defeated the alligator!`;
         alligator = false;
         coins = coins + 30;
-        yourTreasures.push(2);
+        xp = xp + 10;
+        alligatorHealth = 10;
+        // yourTreasures.push(2);
+
+        if (xp >= neededXp) {
+          xp = xp - neededXp;
+          level = level + 1;
+          neededXp = neededXp + 5;
+          levelPoints = levelPoints + 1;
+        }
       }
     }
 
@@ -185,11 +198,19 @@ defence: ${defense}
     }
   }
 
+  if (inputText.startsWith("/upgrade")) {
+    const skillToUpgrade = inputText.split(" ")[1];
+    if (skillToUpgrade === "strength" && levelPoints >= 1) {
+      strength = strength + 1;
+      levelPoints = levelPoints - 1;
+    }
+  }
+
   return outputText;
 }
 
 function updateAlwaysUp() {
   document.getElementById(
     "always-up"
-  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc} `;
+  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc} <br /> xp: ${xp} / ${neededXp} <br /> Level: ${level}`;
 }
