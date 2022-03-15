@@ -56,7 +56,7 @@ const items = [
   { name: "Iron sword", slot: "Weapon" },
   { name: "Cloth tunic", slot: "Chest" },
   { name: "Iron armor", slot: "Chest" },
-  { name: "Alligator tooth", slot: "Weapon" },
+  { name: "Alligator knife", slot: "Weapon" },
 ];
 
 const yourTreasures = [];
@@ -76,6 +76,7 @@ let xp = 0;
 let level = 0;
 let levelPoints = 0;
 let neededXp = 10;
+let alligatorKnife = false;
 
 let equippedItems = {
   Chest: "Cloth tunic",
@@ -123,9 +124,10 @@ health: ${maxHealth}
       outputText = `The item "${itemName}" does not exist`;
       return outputText;
     }
-
-    equippedItems[item.slot] = item.name;
-    outputText = `You equipped ${item.name}`;
+    if (alligatorKnife === true) {
+      equippedItems[item.slot] = item.name;
+      outputText = `You equipped ${item.name}`;
+    }
   }
 
   if (inputText === "?craft") {
@@ -157,6 +159,7 @@ health: ${maxHealth}
     }
 
     outputText = "you crafted an alligator knife";
+    alligatorKnife = true;
   }
 
   if (inputText === "?name") {
