@@ -56,6 +56,7 @@ const items = [
   { name: "Iron sword", slot: "Weapon" },
   { name: "Cloth tunic", slot: "Chest" },
   { name: "Iron armor", slot: "Chest" },
+  { name: "Alligator tooth", slot: "Weapon" },
 ];
 
 const yourTreasures = [];
