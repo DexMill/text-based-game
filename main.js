@@ -51,6 +51,13 @@ const dangerLevelOfLoc = {
 const treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
 const treasureWeights = [20, 10, 50, 100];
 
+const items = [
+  { name: "Wooden sword", slot: "Weapon" },
+  { name: "Iron sword", slot: "Weapon" },
+  { name: "Cloth tunic", slot: "Chest" },
+  { name: "Iron armor", slot: "Chest" },
+];
+
 const yourTreasures = [];
 
 let health = 10;
@@ -108,10 +115,16 @@ health: ${maxHealth}
 
   if (inputText.startsWith("/equip")) {
     const inputTextSplit = inputText.split(" ");
-    const equipmentSlot = inputTextSplit[1];
-    const itemToEquip = inputTextSplit.slice(2).join(" ");
-    equippedItems[equipmentSlot] = itemToEquip;
-    outputText = `You equipped ${itemToEquip}`;
+    const itemName = inputTextSplit.slice(1).join(" ");
+    const item = items.find((i) => i.name === itemName);
+
+    if (!item) {
+      outputText = `The item "${itemToEquip}" does not exist`;
+      return outputText;
+    }
+
+    equippedItems[item.slot] = item.name;
+    outputText = `You equipped ${item.name}`;
   }
 
   if (inputText === "?craft") {
