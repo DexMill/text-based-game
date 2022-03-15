@@ -148,8 +148,8 @@ health: ${maxHealth}
     const randExplore = rand(0, 10);
 
     if (randExplore <= 4) {
-      const randTreasure = rand(0, 2);
-      const treasureYouFound = treasures[randTreasure];
+      const weights = [20, 10, 15]; // Pearl, Diamond, a alligator tooth
+      const treasureYouFound = weightedRandom(treasures, weights);
       yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound}!`;
       coins = coins + 10;
