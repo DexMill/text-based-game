@@ -113,7 +113,7 @@ health: ${maxHealth}
     );
 
     if (!haveStick && !haveAlligatorTooth) {
-      outputText = "You need a stick! And a alligator Tooth";
+      outputText = "You need a stick! And an alligator tooth";
       return outputText;
     }
 
@@ -123,11 +123,11 @@ health: ${maxHealth}
     }
 
     if (!haveAlligatorTooth) {
-      outputText = `\nYou need a alligator tooth`;
+      outputText = `\nYou need an alligator tooth`;
       return outputText;
     }
 
-    outputText = "you crafted a alligator knife";
+    outputText = "you crafted an alligator knife";
   }
 
   if (inputText === "?name") {
