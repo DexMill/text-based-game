@@ -69,6 +69,11 @@ let level = 0;
 let levelPoints = 0;
 let neededXp = 10;
 
+let equippedItems = {
+  Chest: "Cloth tunic",
+  Weapon: "Wooden sword",
+};
+
 function process(inputText) {
   let outputText = "default";
 
@@ -257,5 +262,9 @@ health: ${maxHealth}
 function updateAlwaysUp() {
   document.getElementById(
     "always-up"
-  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Locatioin: ${charLoc} <br /> xp: ${xp} / ${neededXp} <br /> Level: ${level}`;
+  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Location: ${charLoc} <br /> xp: ${xp} / ${neededXp} <br /> Level: ${level} <hr /> <strong>Equipped Items</strong> <br /> ${Object.entries(
+    equippedItems
+  )
+    .map(([key, val]) => `<em>${key}</em>: ${val}`)
+    .join("<br />")}`;
 }
