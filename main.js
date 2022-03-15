@@ -119,7 +119,7 @@ health: ${maxHealth}
     const item = items.find((i) => i.name === itemName);
 
     if (!item) {
-      outputText = `The item "${itemToEquip}" does not exist`;
+      outputText = `The item "${itemName}" does not exist`;
       return outputText;
     }
 
