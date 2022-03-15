@@ -38,7 +38,7 @@ const SET_NAME = "/name ";
 const GOTO_LOC = "/goto ";
 const EXPLORE = "/explore";
 const EXPLORE_SHORT = "/e";
-const INVENTORY = "?i";
+const TREASURES = "?t";
 
 let charName = "Adventurer";
 let charLoc = "Inn";
@@ -48,7 +48,8 @@ const dangerLevelOfLoc = {
   Swamp: 5,
 };
 
-const treasures = ["Pearl", "Diamond", "a Alligator tooth"];
+const treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
+const treasureWeights = [20, 10, 50, 100];
 
 const yourTreasures = [];
 
@@ -99,7 +100,34 @@ health: ${maxHealth}
   }
 
   if (inputText === "?craft") {
-    outputText = "hi";
+    outputText = `recipes:
+/craft alligator knife = 1 alligator tooth and 1 stick
+    
+    `;
+  }
+
+  if (inputText === "/craft alligator knife") {
+    const haveStick = yourTreasures.some((t) => t === "Stick");
+    const haveAlligatorTooth = yourTreasures.some(
+      (t) => t === "Alligator tooth"
+    );
+
+    if (!haveStick && !haveAlligatorTooth) {
+      outputText = "You need a stick! And a alligator Tooth";
+      return outputText;
+    }
+
+    if (!haveStick) {
+      outputText = "You need a stick!";
+      return outputText;
+    }
+
+    if (!haveAlligatorTooth) {
+      outputText = `\nYou need a alligator tooth`;
+      return outputText;
+    }
+
+    outputText = "you crafted a alligator knife";
   }
 
   if (inputText === "?name") {
@@ -147,13 +175,11 @@ health: ${maxHealth}
 
     const randExplore = rand(0, 10);
 
-    if (randExplore <= 4) {
-      const weights = [20, 10, 15]; // Pearl, Diamond, a alligator tooth
-      const treasureYouFound = weightedRandom(treasures, weights);
+    if (randExplore <= 6) {
+      const treasureYouFound = weightedRandom(treasures, treasureWeights);
       yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound}!`;
-      coins = coins + 10;
-    } else if (randExplore > 3 && rand <= 5) {
+    } else if (randExplore > 6 && rand <= 8) {
       outputText = "You have found nothing :/";
     } else {
       generateRandomAlligatorStr();
@@ -162,7 +188,7 @@ health: ${maxHealth}
     }
   }
 
-  if (inputText === INVENTORY) {
+  if (inputText === TREASURES) {
     outputText = `Treasures: ${yourTreasures.join(", ")}
     `;
   }
