@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("text-updates").innerHTML = "";
         e.target.value = "";
       } else {
-        const outputText = process(e.target.value.trim());
+        let outputText = process(e.target.value.trim());
         addTextUpdate(outputText);
         e.target.value = "";
       }
@@ -30,28 +30,41 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function generateRandomAlligatorStr() {
-  const randomAlligatorStr = rand(1, 2);
+  let randomAlligatorStr = rand(1, 2);
   alligatorStr = randomAlligatorStr;
 }
 
-const SET_NAME = "/name ";
-const GOTO_LOC = "/goto ";
-const EXPLORE = "/explore";
-const EXPLORE_SHORT = "/e";
-const TREASURES = "?t";
+// Dex can ignore
+function deleteFromInv(treasures) {
+  if (typeof treasures === "string") {
+    yourTreasures[yourTreasures.indexOf(t)] = undefined;
+    yourTreasures = yourTreasures.filter((t) => t !== undefined);
+  }
+
+  for (let t of treasures) {
+    yourTreasures[yourTreasures.indexOf(t)] = undefined;
+  }
+  yourTreasures = yourTreasures.filter((t) => t !== undefined);
+}
+
+let SET_NAME = "/name ";
+let GOTO_LOC = "/goto ";
+let EXPLORE = "/explore";
+let EXPLORE_SHORT = "/e";
+let TREASURES = "?t";
 
 let charName = "Adventurer";
 let charLoc = "Inn";
 
-const dangerLevelOfLoc = {
+let dangerLevelOfLoc = {
   Inn: 0,
   Swamp: 5,
 };
 
-const treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
-const treasureWeights = [20, 10, 50, 100];
+let treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
+let treasureWeights = [20, 10, 50, 100];
 
-const items = [
+let itemTypes = [
   { name: "Wooden sword", slot: "Weapon" },
   { name: "Iron sword", slot: "Weapon" },
   { name: "Cloth tunic", slot: "Chest" },
@@ -59,7 +72,7 @@ const items = [
   { name: "Alligator knife", slot: "Weapon" },
 ];
 
-const yourTreasures = [];
+let yourTreasures = [];
 
 let health = 10;
 let maxHealth = 10;
@@ -76,7 +89,6 @@ let xp = 0;
 let level = 0;
 let levelPoints = 0;
 let neededXp = 10;
-let alligatorKnife = false;
 
 let equippedItems = {
   Chest: "Cloth tunic",
@@ -116,32 +128,45 @@ health: ${maxHealth}
   }
 
   if (inputText.startsWith("/equip")) {
-    const inputTextSplit = inputText.split(" ");
-    const itemName = inputTextSplit.slice(1).join(" ");
-    const item = items.find((i) => i.name === itemName);
+    let inputTextSplit = inputText.split(" ");
+    let itemName = inputTextSplit.slice(1).join(" ");
+    let itemType = itemTypes.find((i) => i.name === itemName);
 
-    if (!item) {
-      outputText = `The item "${itemName}" does not exist`;
+    if (!itemType) {
+      outputText = `The item type "${itemName}" does not exist`;
       return outputText;
     }
-    if (alligatorKnife === true) {
-      equippedItems[item.slot] = item.name;
-      outputText = `You equipped ${item.name}`;
+
+    let haveInInventory = yourTreasures.some((t) => t === itemType.name);
+
+    if (!haveInInventory) {
+      outputText = `You don't have the item "${itemName}" in your inventory`;
+      return outputText;
     }
+
+    let prevItemInSlot = equippedItems[itemType.slot];
+
+    equippedItems[itemType.slot] = itemType.name;
+
+    let index = yourTreasures.indexOf(itemType.name);
+
+    yourTreasures[index] = prevItemInSlot ? prevItemInSlot.name : undefined;
+
+    yourTreasures = yourTreasures.filter((t) => t !== undefined);
+
+    outputText = `You equipped ${itemType.name}`;
   }
 
   if (inputText === "?craft") {
     outputText = `recipes:
-/craft alligator knife = 1 alligator tooth and 1 stick
+/craft Alligator knife = 1 alligator tooth and 1 stick
     
     `;
   }
 
-  if (inputText === "/craft alligator knife") {
-    const haveStick = yourTreasures.some((t) => t === "Stick");
-    const haveAlligatorTooth = yourTreasures.some(
-      (t) => t === "Alligator tooth"
-    );
+  if (inputText === "/craft Alligator knife") {
+    let haveStick = yourTreasures.some((t) => t === "Stick");
+    let haveAlligatorTooth = yourTreasures.some((t) => t === "Alligator tooth");
 
     if (!haveStick && !haveAlligatorTooth) {
       outputText = "You need a stick! And an alligator tooth";
@@ -158,8 +183,10 @@ health: ${maxHealth}
       return outputText;
     }
 
-    outputText = "you crafted an alligator knife";
-    alligatorKnife = true;
+    deleteFromInv(["Stick", "Alligator tooth"]);
+
+    outputText = "you crafted an Alligator knife";
+    yourTreasures.push("Alligator knife");
   }
 
   if (inputText === "?name") {
@@ -205,10 +232,10 @@ health: ${maxHealth}
       return outputText;
     }
 
-    const randExplore = rand(0, 10);
+    let randExplore = rand(0, 10);
 
     if (randExplore <= 6) {
-      const treasureYouFound = weightedRandom(treasures, treasureWeights);
+      let treasureYouFound = weightedRandom(treasures, treasureWeights);
       yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound}!`;
     } else if (randExplore > 6 && rand <= 8) {
@@ -234,7 +261,7 @@ health: ${maxHealth}
         alligatorHealth = 0;
       }
 
-      const isAlligatorDead = alligatorHealth === 0;
+      let isAlligatorDead = alligatorHealth === 0;
 
       outputText += `\nThe alligator health is ${alligatorHealth}.`;
 
@@ -268,7 +295,7 @@ health: ${maxHealth}
   }
 
   if (inputText.startsWith("/u")) {
-    const skillToUpgrade = inputText.split(" ")[1];
+    let skillToUpgrade = inputText.split(" ")[1];
     if (skillToUpgrade === "s" && levelPoints >= 1) {
       strength = strength + 1;
       levelPoints = levelPoints - 1;
@@ -293,5 +320,5 @@ function updateAlwaysUp() {
     equippedItems
   )
     .map(([key, val]) => `<em>${key}</em>: ${val}`)
-    .join("<br />")}`;
+    .join("<br />")}<hr />${yourTreasures.join(", ")}`;
 }
