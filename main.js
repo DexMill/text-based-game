@@ -92,6 +92,8 @@ function process(inputText) {
 /retreat = run away
 /u h or s = upgrade strength or health
 ?craft = list all recipes
+/craft = crafts
+/equip (item) = equips a item
 `;
   }
 
@@ -102,6 +104,14 @@ strength:  ${strength}
 health: ${maxHealth}
 
 `;
+  }
+
+  if (inputText.startsWith("/equip")) {
+    const inputTextSplit = inputText.split(" ");
+    const equipmentSlot = inputTextSplit[1];
+    const itemToEquip = inputTextSplit.slice(2).join(" ");
+    equippedItems[equipmentSlot] = itemToEquip;
+    outputText = `You equipped ${itemToEquip}`;
   }
 
   if (inputText === "?craft") {
