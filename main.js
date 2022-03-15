@@ -53,10 +53,10 @@ const treasures = ["Pearl", "Diamond", "a Alligator tooth"];
 const yourTreasures = [];
 
 let health = 10;
+let maxHealth = 10;
 let mana = 10;
 let stamina = 10;
 let strength = 3;
-let defense = 10;
 let canExplore = charLoc === "Swamp" ? true : false;
 let alligator = false;
 let alligatorStr = 0;
@@ -82,6 +82,10 @@ function process(inputText) {
 /clear = clears log
 /goto loc = goes to a loc
 /explore-e = explores
+/a-attack = attack
+/retreat = run away
+/u h or s = upgrade strength or health
+?craft = list all recipes
 `;
   }
 
@@ -89,9 +93,13 @@ function process(inputText) {
     outputText = `stats:
 
 strength:  ${strength}
-defence: ${defense}
+health: ${maxHealth}
 
 `;
+  }
+
+  if (inputText === "?craft") {
+    outputText = "hi";
   }
 
   if (inputText === "?name") {
@@ -120,11 +128,9 @@ defence: ${defense}
     outputText = `You've traveled to ${newLoc}`;
   }
 
-  if (charLoc === "Inn") {
-    if (health < 10) {
-      health = 10;
-      outputText += `\nYou have max health.`;
-    }
+  if (charLoc === "Inn" && health != maxHealth) {
+    health = maxHealth;
+    outputText += `\nYou have max health.`;
   }
 
   if (inputText === EXPLORE || inputText === EXPLORE_SHORT) {
@@ -170,16 +176,21 @@ defence: ${defense}
         alligatorHealth = 0;
       }
 
-      outputText += `\nThe alligator health is ${alligatorHealth}.`;
-      health = health - alligatorStr;
+      const isAlligatorDead = alligatorHealth === 0;
 
-      if (alligatorHealth === 0) {
+      outputText += `\nThe alligator health is ${alligatorHealth}.`;
+
+      if (!isAlligatorDead) {
+        health = health - alligatorStr;
+      }
+
+      if (isAlligatorDead) {
         outputText += `\nYou've defeated the alligator!`;
         alligator = false;
         coins = coins + 30;
         xp = xp + 10;
         alligatorHealth = 10;
-        // yourTreasures.push(2);
+        yourTreasures.push(treasures[2]);
 
         if (xp >= neededXp) {
           xp = xp - neededXp;
@@ -202,6 +213,14 @@ defence: ${defense}
     const skillToUpgrade = inputText.split(" ")[1];
     if (skillToUpgrade === "s" && levelPoints >= 1) {
       strength = strength + 1;
+      levelPoints = levelPoints - 1;
+      outputText = "you upgraded Strength";
+    }
+
+    if (skillToUpgrade === "h" && levelPoints >= 1) {
+      maxHealth = maxHealth + 1;
+      health = maxHealth;
+      outputText = "You have upgrade Health";
       levelPoints = levelPoints - 1;
     }
   }
