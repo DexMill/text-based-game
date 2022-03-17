@@ -1,3 +1,6 @@
+import { rand } from "./utils.js";
+import { weightedRandom } from "./weighted-random.js";
+
 function addTextUpdate(text) {
   let newUpdate = document.createElement("pre");
   newUpdate.innerHTML = text;
@@ -11,17 +14,23 @@ document.addEventListener("DOMContentLoaded", function () {
   // Detecting ENTER in main text input
   document.getElementById("main-input").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
+      // @ts-ignore
       if (e.target.value === "/clear") {
         document.getElementById("text-updates").innerHTML = "";
+        // @ts-ignore
         e.target.value = "";
+        // @ts-ignore
       } else if (e.target.value === "/reset") {
         localStorage.setItem("text-based-game-state", null);
+        // @ts-ignore
         e.target.value = "";
       } else {
+        // @ts-ignore
         let outputText = process(e.target.value.trim());
         addTextUpdate(outputText);
         // save state to localStorage
         localStorage.setItem("text-based-game-state", JSON.stringify(state));
+        // @ts-ignore
         e.target.value = "";
       }
       updateAlwaysUp();
@@ -37,7 +46,7 @@ function generateRandomAlligatorStr() {
 // Dex can ignore
 function deleteFromInv(treasures) {
   if (typeof treasures === "string") {
-    state.yourTreasures[state.yourTreasures.indexOf(t)] = undefined;
+    state.yourTreasures[state.yourTreasures.indexOf(treasures)] = undefined;
     state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
   }
 
@@ -207,7 +216,7 @@ health: ${state.maxHealth}
   }
 
   if (inputText === "?name") {
-    outputText = charName;
+    outputText = state.charName;
   }
 
   if (inputText === "?loc" || inputText === "?l") {
@@ -217,15 +226,15 @@ health: ${state.maxHealth}
   }
 
   if (inputText.startsWith(SET_NAME)) {
-    charName = inputText.slice(SET_NAME.length);
-    outputText = `Name set to ${charName}`;
+    state.charName = inputText.slice(SET_NAME.length);
+    outputText = `Name set to ${state.charName}`;
   }
 
   if (inputText.startsWith(GOTO_LOC)) {
-    newLoc = inputText.slice(GOTO_LOC.length);
-    state.charLoc = newLoc;
+    state.newLoc = inputText.slice(GOTO_LOC.length);
+    state.charLoc = state.newLoc;
 
-    outputText = `You've traveled to ${newLoc}`;
+    outputText = `You've traveled to ${state.newLoc}`;
   }
 
   if (state.charLoc === "Inn" && state.health != state.maxHealth) {
@@ -251,7 +260,7 @@ health: ${state.maxHealth}
       let treasureYouFound = weightedRandom(treasures, treasureWeights);
       state.yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound}!`;
-    } else if (randExplore > 6 && rand <= 8) {
+    } else if (randExplore > 6 && randExplore <= 8) {
       outputText = "You have found nothing :/";
     } else {
       generateRandomAlligatorStr();
@@ -309,7 +318,7 @@ health: ${state.maxHealth}
 
   if (inputText.startsWith("/u")) {
     let skillToUpgrade = inputText.split(" ")[1];
-    if (skillToUpgrade === "s" && levelPoints >= 1) {
+    if (skillToUpgrade === "s" && state.levelPoints >= 1) {
       state.strength = state.strength + 1;
       state.levelPoints = state.levelPoints - 1;
       outputText = "you upgraded Strength";

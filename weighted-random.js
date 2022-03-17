@@ -61,7 +61,7 @@ function _selectObj(obj, options) {
   return _selectArr(keys, values, options);
 }
 
-function weightedRandom(set, weights, options) {
+export function weightedRandom(set, weights, options) {
   if (typeof options === "function") {
     options = {
       rand: options,
