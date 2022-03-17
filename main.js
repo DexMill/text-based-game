@@ -1,8 +1,3 @@
-function rand(min, max) {
-  // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 function addTextUpdate(text) {
   let newUpdate = document.createElement("pre");
   newUpdate.innerHTML = text;
@@ -19,9 +14,14 @@ document.addEventListener("DOMContentLoaded", function () {
       if (e.target.value === "/clear") {
         document.getElementById("text-updates").innerHTML = "";
         e.target.value = "";
+      } else if (e.target.value === "/reset") {
+        localStorage.setItem("text-based-game-state", null);
+        e.target.value = "";
       } else {
         let outputText = process(e.target.value.trim());
         addTextUpdate(outputText);
+        // save state to localStorage
+        localStorage.setItem("text-based-game-state", JSON.stringify(state));
         e.target.value = "";
       }
       updateAlwaysUp();
@@ -69,30 +69,46 @@ let itemTypes = [
   { name: "Alligator knife", slot: "Weapon" },
 ];
 
-let state = {
-  charName: "Adventurer",
-  charLoc: "Inn",
-  yourTreasures: [],
-  health: 10,
-  maxHealth: 10,
-  mana: 10,
-  stamina: 10,
-  strength: 3,
-  canExplore: false, // Assumes you don't start in swamp
-  alligator: false,
-  alligatorStr: 0,
-  combat: false,
-  alligatorHealth: 10,
-  coins: 150,
-  xp: 0,
-  level: 0,
-  levelPoints: 0,
-  neededXp: 10,
-  equippedItems: {
-    Chest: "Cloth tunic",
-    Weapon: "Wooden sword",
-  },
-};
+const savedStateAsString = localStorage.getItem("text-based-game-state");
+
+function canExplore() {
+  if (state.charLoc === "Swamp") {
+    return true;
+  }
+
+  return false;
+}
+
+let savedState;
+if (savedStateAsString) {
+  savedState = JSON.parse(savedStateAsString);
+}
+
+let state = savedState
+  ? savedState
+  : {
+      charName: "Adventurer",
+      charLoc: "Inn",
+      yourTreasures: [],
+      health: 10,
+      maxHealth: 10,
+      mana: 10,
+      stamina: 10,
+      strength: 3,
+      alligator: false,
+      alligatorStr: 0,
+      combat: false,
+      alligatorHealth: 10,
+      coins: 150,
+      xp: 0,
+      level: 0,
+      levelPoints: 0,
+      neededXp: 10,
+      equippedItems: {
+        Chest: "Cloth tunic",
+        Weapon: "Wooden sword",
+      },
+    };
 
 function process(inputText) {
   let outputText = "default";
@@ -195,7 +211,9 @@ health: ${state.maxHealth}
   }
 
   if (inputText === "?loc" || inputText === "?l") {
-    outputText = `Location: ${charLoc} - Danger Lvl: ${dangerLevelOfLoc[charLoc]}`;
+    outputText = `Location: ${state.charLoc} - Danger Lvl: ${
+      dangerLevelOfLoc[state.charLoc]
+    }`;
   }
 
   if (inputText.startsWith(SET_NAME)) {
@@ -205,13 +223,7 @@ health: ${state.maxHealth}
 
   if (inputText.startsWith(GOTO_LOC)) {
     newLoc = inputText.slice(GOTO_LOC.length);
-    charLoc = newLoc;
-
-    if (charLoc === "Swamp") {
-      canExplore = true;
-    } else {
-      canExplore = false;
-    }
+    state.charLoc = newLoc;
 
     outputText = `You've traveled to ${newLoc}`;
   }
@@ -222,7 +234,7 @@ health: ${state.maxHealth}
   }
 
   if (inputText === EXPLORE || inputText === EXPLORE_SHORT) {
-    if (canExplore === false) {
+    if (canExplore() === false) {
       outputText = "You cannot explore here ";
       return outputText;
     }
