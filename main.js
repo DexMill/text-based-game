@@ -31,20 +31,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function generateRandomAlligatorStr() {
   let randomAlligatorStr = rand(1, 2);
-  alligatorStr = randomAlligatorStr;
+  state.alligatorStr = randomAlligatorStr;
 }
 
 // Dex can ignore
 function deleteFromInv(treasures) {
   if (typeof treasures === "string") {
-    yourTreasures[yourTreasures.indexOf(t)] = undefined;
-    yourTreasures = yourTreasures.filter((t) => t !== undefined);
+    state.yourTreasures[state.yourTreasures.indexOf(t)] = undefined;
+    state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
   }
 
   for (let t of treasures) {
-    yourTreasures[yourTreasures.indexOf(t)] = undefined;
+    state.yourTreasures[state.yourTreasures.indexOf(t)] = undefined;
   }
-  yourTreasures = yourTreasures.filter((t) => t !== undefined);
+  state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
 }
 
 let SET_NAME = "/name ";
@@ -52,9 +52,6 @@ let GOTO_LOC = "/goto ";
 let EXPLORE = "/explore";
 let EXPLORE_SHORT = "/e";
 let TREASURES = "?t";
-
-let charName = "Adventurer";
-let charLoc = "Inn";
 
 let dangerLevelOfLoc = {
   Inn: 0,
@@ -72,27 +69,29 @@ let itemTypes = [
   { name: "Alligator knife", slot: "Weapon" },
 ];
 
-let yourTreasures = [];
-
-let health = 10;
-let maxHealth = 10;
-let mana = 10;
-let stamina = 10;
-let strength = 3;
-let canExplore = charLoc === "Swamp" ? true : false;
-let alligator = false;
-let alligatorStr = 0;
-let combat = false;
-let alligatorHealth = 10;
-let coins = 150;
-let xp = 0;
-let level = 0;
-let levelPoints = 0;
-let neededXp = 10;
-
-let equippedItems = {
-  Chest: "Cloth tunic",
-  Weapon: "Wooden sword",
+let state = {
+  charName: "Adventurer",
+  charLoc: "Inn",
+  yourTreasures: [],
+  health: 10,
+  maxHealth: 10,
+  mana: 10,
+  stamina: 10,
+  strength: 3,
+  canExplore: false, // Assumes you don't start in swamp
+  alligator: false,
+  alligatorStr: 0,
+  combat: false,
+  alligatorHealth: 10,
+  coins: 150,
+  xp: 0,
+  level: 0,
+  levelPoints: 0,
+  neededXp: 10,
+  equippedItems: {
+    Chest: "Cloth tunic",
+    Weapon: "Wooden sword",
+  },
 };
 
 function process(inputText) {
@@ -121,8 +120,8 @@ function process(inputText) {
   if (inputText === "?stat" || inputText === "?s") {
     outputText = `stats:
 
-strength:  ${strength}
-health: ${maxHealth}
+strength:  ${state.strength}
+health: ${state.maxHealth}
 
 `;
   }
@@ -137,22 +136,22 @@ health: ${maxHealth}
       return outputText;
     }
 
-    let haveInInventory = yourTreasures.some((t) => t === itemType.name);
+    let haveInInventory = state.yourTreasures.some((t) => t === itemType.name);
 
     if (!haveInInventory) {
       outputText = `You don't have the item "${itemName}" in your inventory`;
       return outputText;
     }
 
-    let prevItemInSlot = equippedItems[itemType.slot];
+    let prevItemInSlot = state.equippedItems[itemType.slot];
 
-    equippedItems[itemType.slot] = itemType.name;
+    state.equippedItems[itemType.slot] = itemType.name;
 
-    let index = yourTreasures.indexOf(itemType.name);
+    let index = state.yourTreasures.indexOf(itemType.name);
 
-    yourTreasures[index] = prevItemInSlot ? prevItemInSlot.name : undefined;
+    state.yourTreasures[index] = prevItemInSlot;
 
-    yourTreasures = yourTreasures.filter((t) => t !== undefined);
+    state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
 
     outputText = `You equipped ${itemType.name}`;
   }
@@ -165,8 +164,10 @@ health: ${maxHealth}
   }
 
   if (inputText === "/craft Alligator knife") {
-    let haveStick = yourTreasures.some((t) => t === "Stick");
-    let haveAlligatorTooth = yourTreasures.some((t) => t === "Alligator tooth");
+    let haveStick = state.yourTreasures.some((t) => t === "Stick");
+    let haveAlligatorTooth = state.yourTreasures.some(
+      (t) => t === "Alligator tooth"
+    );
 
     if (!haveStick && !haveAlligatorTooth) {
       outputText = "You need a stick! And an alligator tooth";
@@ -186,7 +187,7 @@ health: ${maxHealth}
     deleteFromInv(["Stick", "Alligator tooth"]);
 
     outputText = "you crafted an Alligator knife";
-    yourTreasures.push("Alligator knife");
+    state.yourTreasures.push("Alligator knife");
   }
 
   if (inputText === "?name") {
@@ -215,8 +216,8 @@ health: ${maxHealth}
     outputText = `You've traveled to ${newLoc}`;
   }
 
-  if (charLoc === "Inn" && health != maxHealth) {
-    health = maxHealth;
+  if (state.charLoc === "Inn" && state.health != state.maxHealth) {
+    state.health = state.maxHealth;
     outputText += `\nYou have max health.`;
   }
 
@@ -226,7 +227,7 @@ health: ${maxHealth}
       return outputText;
     }
 
-    if (alligator === true) {
+    if (state.alligator === true) {
       outputText =
         "You must either defeat the alligator and gain 30 coins or retreat and lose 10 coins before you may explore more";
       return outputText;
@@ -236,77 +237,77 @@ health: ${maxHealth}
 
     if (randExplore <= 6) {
       let treasureYouFound = weightedRandom(treasures, treasureWeights);
-      yourTreasures.push(treasureYouFound);
+      state.yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound}!`;
     } else if (randExplore > 6 && rand <= 8) {
       outputText = "You have found nothing :/";
     } else {
       generateRandomAlligatorStr();
-      outputText = `You have found something! An alligator with strength ${alligatorStr}!! Use /attack or /retreat`;
-      alligator = true;
+      outputText = `You have found something! An alligator with strength ${state.alligatorStr}!! Use /attack or /retreat`;
+      state.alligator = true;
     }
   }
 
   if (inputText === TREASURES) {
-    outputText = `Treasures: ${yourTreasures.join(", ")}
+    outputText = `Treasures: ${state.yourTreasures.join(", ")}
     `;
   }
 
-  if (alligator === true) {
+  if (state.alligator === true) {
     if (inputText === "/attack" || inputText === "/a") {
       outputText = "You attack an alligator.";
-      alligatorHealth = alligatorHealth - strength;
+      state.alligatorHealth = state.alligatorHealth - state.strength;
 
-      if (alligatorHealth < 0) {
-        alligatorHealth = 0;
+      if (state.alligatorHealth < 0) {
+        state.alligatorHealth = 0;
       }
 
-      let isAlligatorDead = alligatorHealth === 0;
+      let isAlligatorDead = state.alligatorHealth === 0;
 
-      outputText += `\nThe alligator health is ${alligatorHealth}.`;
+      outputText += `\nThe alligator health is ${state.alligatorHealth}.`;
 
       if (!isAlligatorDead) {
-        health = health - alligatorStr;
+        state.health = state.health - state.alligatorStr;
       }
 
       if (isAlligatorDead) {
         outputText += `\nYou've defeated the alligator!`;
-        alligator = false;
-        coins = coins + 30;
-        xp = xp + 10;
-        alligatorHealth = 10;
-        yourTreasures.push(treasures[2]);
+        state.alligator = false;
+        state.coins = state.coins + 30;
+        state.xp = state.xp + 10;
+        state.alligatorHealth = 10;
+        state.yourTreasures.push(treasures[2]);
 
-        if (xp >= neededXp) {
-          xp = xp - neededXp;
-          level = level + 1;
-          neededXp = neededXp + 5;
-          levelPoints = levelPoints + 1;
+        if (state.xp >= state.neededXp) {
+          state.xp = state.xp - state.neededXp;
+          state.level = state.level + 1;
+          state.neededXp = state.neededXp + 5;
+          state.levelPoints = state.levelPoints + 1;
         }
       }
     }
 
     if (inputText === "/retreat") {
       outputText = "You retreat from the alligator!";
-      alligator = false;
-      coins = coins - 10;
-      health = health - 1;
+      state.alligator = false;
+      state.coins = state.coins - 10;
+      state.health = state.health - 1;
     }
   }
 
   if (inputText.startsWith("/u")) {
     let skillToUpgrade = inputText.split(" ")[1];
     if (skillToUpgrade === "s" && levelPoints >= 1) {
-      strength = strength + 1;
-      levelPoints = levelPoints - 1;
+      state.strength = state.strength + 1;
+      state.levelPoints = state.levelPoints - 1;
       outputText = "you upgraded Strength";
     }
 
-    if (skillToUpgrade === "h" && levelPoints >= 1) {
-      maxHealth = maxHealth + 1;
-      health = maxHealth;
+    if (skillToUpgrade === "h" && state.levelPoints >= 1) {
+      state.maxHealth = state.maxHealth + 1;
+      state.health = state.maxHealth;
       outputText = "You have upgrade Health";
-      levelPoints = levelPoints - 1;
+      state.levelPoints = state.levelPoints - 1;
     }
   }
 
@@ -314,11 +315,17 @@ health: ${maxHealth}
 }
 
 function updateAlwaysUp() {
-  document.getElementById(
-    "always-up"
-  ).innerHTML = `Health: ${health} - Mana: ${mana} - Stamina: ${stamina} - coins ${coins} <br /> Location: ${charLoc} <br /> xp: ${xp} / ${neededXp} <br /> Level: ${level} <hr /> <strong>Equipped Items</strong> <br /> ${Object.entries(
-    equippedItems
+  document.getElementById("always-up").innerHTML = `Health: ${
+    state.health
+  } - Mana: ${state.mana} - Stamina: ${state.stamina} - coins ${
+    state.coins
+  } <br /> Location: ${state.charLoc} <br /> xp: ${state.xp} / ${
+    state.neededXp
+  } <br /> Level: ${
+    state.level
+  } <hr /> <strong>Equipped Items</strong> <br /> ${Object.entries(
+    state.equippedItems
   )
     .map(([key, val]) => `<em>${key}</em>: ${val}`)
-    .join("<br />")}<hr />${yourTreasures.join(", ")}`;
+    .join("<br />")}<hr />${state.yourTreasures.join(", ")}`;
 }
