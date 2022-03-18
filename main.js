@@ -73,12 +73,18 @@ let itemTypes = [
   { name: "Alligator knife", slot: "Weapon" },
 ];
 
-let locations = [{ name: "Swamp" }, { name: "Inn" }, { name: "Forest" }];
+let locations = [
+  { name: "Swamp" },
+  { name: "Inn" },
+  { name: "Forest" },
+  { name: "Village" },
+];
 
 let dangerLevelOfLoc = {
   Inn: 0,
   Swamp: 5,
   Forest: 3,
+  Village: 1,
 };
 
 const savedStateAsString = localStorage.getItem("text-based-game-state");
