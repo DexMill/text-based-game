@@ -78,15 +78,36 @@ let treasures = [
   {
     name: "Stick",
   },
+
+  {
+    name: "Iron",
+  },
+
+  {
+    name: "Alligator scale",
+  },
+
+  {
+    name: "Shiny rock",
+  },
+
+  {
+    name: "Gem",
+  },
 ];
-let treasureWeights = [20, 10, 50, 100];
+
+function getTreasureByName(name) {
+  return treasures.find((t) => t.name === name);
+}
+
+let treasureWeights = [20, 10, 50, 100, 70, 30, 40, 30];
 
 let itemTypes = [
-  { name: "Wooden sword", slot: "Weapon" },
-  { name: "Iron sword", slot: "Weapon" },
+  { name: "Wooden sword", slot: "Weapon", damage: 2 },
+  { name: "Iron sword", slot: "Weapon", damage: 3 },
   { name: "Cloth tunic", slot: "Chest" },
   { name: "Iron armor", slot: "Chest" },
-  { name: "Alligator knife", slot: "Weapon" },
+  { name: "Alligator knife", slot: "Weapon", damage: 3 },
 ];
 
 let locations = [
@@ -94,6 +115,7 @@ let locations = [
   { name: "Inn" },
   { name: "Forest" },
   { name: "Village" },
+  { name: "MineLevel1" },
 ];
 
 let dangerLevelOfLoc = {
@@ -101,12 +123,18 @@ let dangerLevelOfLoc = {
   Swamp: 5,
   Forest: 3,
   Village: 1,
+  MineLevel1: 0,
 };
 
 const savedStateAsString = localStorage.getItem("text-based-game-state");
 
 function canExplore() {
-  if (state.charLoc === "Swamp") {
+  if (
+    state.charLoc === "Swamp" ||
+    state.charLoc === "Forest" ||
+    state.charLoc === "Village" ||
+    state.charLoc === "MineLevel1"
+  ) {
     return true;
   }
 
@@ -134,7 +162,8 @@ let state = savedState
       maxHealth: 10,
       mana: 10,
       stamina: 10,
-      strength: 3,
+      maxStamina: 10,
+      strength: 0,
       alligator: false,
       alligatorStr: 0,
       combat: false,
@@ -144,9 +173,10 @@ let state = savedState
       level: 0,
       levelPoints: 0,
       neededXp: 10,
+
       equippedItems: {
-        Chest: { name: "Cloth tunic" },
-        Weapon: { name: "Wooden sword" },
+        Chest: itemTypes.find((itemType) => itemType.name === "Cloth tunic"),
+        Weapon: itemTypes.find((itemType) => itemType.name === "Wooden sword"),
       },
     };
 
@@ -280,6 +310,7 @@ health: ${state.maxHealth}
 
   if (state.charLoc === "Inn" && state.health != state.maxHealth) {
     state.health = state.maxHealth;
+    state.stamina = state.maxStamina;
     outputText += `\nYou have max health.`;
   }
 
@@ -295,18 +326,34 @@ health: ${state.maxHealth}
       return outputText;
     }
 
-    let randExplore = rand(0, 10);
+    let randExplore = rand(0, 100);
 
-    if (randExplore <= 6) {
+    if (randExplore <= 60) {
       let treasureYouFound = weightedRandom(treasures, treasureWeights);
       state.yourTreasures.push(treasureYouFound);
       outputText = `You have found ${treasureYouFound.name}!`;
-    } else if (randExplore > 6 && randExplore <= 8) {
-      outputText = "You have found nothing :/";
+
+      if (state.charLoc === "MineLevel1") {
+        state.xp = state.xp + 5;
+      }
     } else {
-      generateRandomAlligatorStr();
-      outputText = `You have found something! An alligator with strength ${state.alligatorStr}!! Use /attack or /retreat`;
-      state.alligator = true;
+      if (state.charLoc === "Swamp") {
+        generateRandomAlligatorStr();
+        state.alligator = true;
+        outputText = `You have been attacked by an an alligator!`;
+      }
+
+      if (state.charLoc === "MineLevel1") {
+        state.xp = state.xp + 10;
+        outputText = `You gain XP!`;
+      }
+    }
+
+    if (state.xp >= state.neededXp) {
+      state.xp = state.xp - state.neededXp;
+      state.level = state.level + 1;
+      state.neededXp = state.neededXp + 5;
+      state.levelPoints = state.levelPoints + 1;
     }
   }
 
@@ -320,7 +367,10 @@ health: ${state.maxHealth}
   if (state.alligator === true) {
     if (inputText === "/attack" || inputText === "/a") {
       outputText = "You attack an alligator.";
-      state.alligatorHealth = state.alligatorHealth - state.strength;
+      state.alligatorHealth =
+        state.alligatorHealth -
+        state.strength -
+        state.equippedItems.Weapon.damage;
 
       if (state.alligatorHealth < 0) {
         state.alligatorHealth = 0;
@@ -392,6 +442,10 @@ function updateAlwaysUp() {
   )
     .map(([key, val]) => `<em>${key}</em>: ${val.name}`)
     .join("<br />")}<hr />${
-    state.yourTreasures.map((t) => t.name).join(", ") && ""
+    state.yourTreasures
+      .map((t, i, arr) => {
+        return JSON.stringify(t, undefined, 2);
+      })
+      .join(", ") && ""
   }`;
 }
