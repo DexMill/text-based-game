@@ -62,11 +62,6 @@ let EXPLORE = "/explore";
 let EXPLORE_SHORT = "/e";
 let TREASURES = "?t";
 
-let dangerLevelOfLoc = {
-  Inn: 0,
-  Swamp: 5,
-};
-
 let treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
 let treasureWeights = [20, 10, 50, 100];
 
@@ -78,11 +73,25 @@ let itemTypes = [
   { name: "Alligator knife", slot: "Weapon" },
 ];
 
+let locations = [{ name: "Swamp" }, { name: "Inn" }, { name: "Forest" }];
+
+let dangerLevelOfLoc = {
+  Inn: 0,
+  Swamp: 5,
+  Forest: 3,
+};
+
 const savedStateAsString = localStorage.getItem("text-based-game-state");
 
 function canExplore() {
   if (state.charLoc === "Swamp") {
     return true;
+  }
+
+  if (!locations.some((loc) => loc.name === state.charLoc)) {
+    state.charLoc = "Inn";
+    state.outputText =
+      "You were moved into the Inn because that location does not exist";
   }
 
   return false;
@@ -120,7 +129,7 @@ let state = savedState
     };
 
 function process(inputText) {
-  let outputText = "default";
+  let outputText = "unknown command";
 
   if (inputText === "?help" || inputText === "?h") {
     outputText = `Commands available:
@@ -231,10 +240,18 @@ health: ${state.maxHealth}
   }
 
   if (inputText.startsWith(GOTO_LOC)) {
-    state.newLoc = inputText.slice(GOTO_LOC.length);
-    state.charLoc = state.newLoc;
+    let newLoc = inputText.slice(GOTO_LOC.length);
 
-    outputText = `You've traveled to ${state.newLoc}`;
+    if (!locations.some((loc) => loc.name === newLoc)) {
+      state.charLoc = "Inn";
+      outputText =
+        "You were moved into the Inn because that location does not exist";
+      return outputText;
+    }
+
+    state.charLoc = newLoc;
+
+    outputText = `You've traveled to ${newLoc}`;
   }
 
   if (state.charLoc === "Inn" && state.health != state.maxHealth) {
@@ -348,5 +365,5 @@ function updateAlwaysUp() {
     state.equippedItems
   )
     .map(([key, val]) => `<em>${key}</em>: ${val}`)
-    .join("<br />")}<hr />${state.yourTreasures.join(", ")}`;
+    .join("<br />")}<hr />${state.yourTreasures.join(", ") && ""}`;
 }
