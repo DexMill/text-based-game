@@ -46,12 +46,15 @@ function generateRandomAlligatorStr() {
 // Dex can ignore
 function deleteFromInv(treasures) {
   if (typeof treasures === "string") {
-    state.yourTreasures[state.yourTreasures.indexOf(treasures)] = undefined;
+    state.yourTreasures[
+      state.yourTreasures.findIndex((t) => t.name === treasures)
+    ] = undefined;
     state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
   }
 
   for (let t of treasures) {
-    state.yourTreasures[state.yourTreasures.indexOf(t)] = undefined;
+    state.yourTreasures[state.yourTreasures.findIndex((t2) => t2.name === t)] =
+      undefined;
   }
   state.yourTreasures = state.yourTreasures.filter((t) => t !== undefined);
 }
@@ -62,7 +65,20 @@ let EXPLORE = "/explore";
 let EXPLORE_SHORT = "/e";
 let TREASURES = "?t";
 
-let treasures = ["Pearl", "Diamond", "Alligator tooth", "Stick"];
+let treasures = [
+  {
+    name: "Pearl",
+  },
+  {
+    name: "Diamond",
+  },
+  {
+    name: "Alligator tooth",
+  },
+  {
+    name: "Stick",
+  },
+];
 let treasureWeights = [20, 10, 50, 100];
 
 let itemTypes = [
@@ -129,8 +145,8 @@ let state = savedState
       levelPoints: 0,
       neededXp: 10,
       equippedItems: {
-        Chest: "Cloth tunic",
-        Weapon: "Wooden sword",
+        Chest: { name: "Cloth tunic" },
+        Weapon: { name: "Wooden sword" },
       },
     };
 
@@ -176,7 +192,9 @@ health: ${state.maxHealth}
       return outputText;
     }
 
-    let haveInInventory = state.yourTreasures.some((t) => t === itemType.name);
+    let haveInInventory = state.yourTreasures.some(
+      (t) => t.name === itemType.name
+    );
 
     if (!haveInInventory) {
       outputText = `You don't have the item "${itemName}" in your inventory`;
@@ -185,9 +203,9 @@ health: ${state.maxHealth}
 
     let prevItemInSlot = state.equippedItems[itemType.slot];
 
-    state.equippedItems[itemType.slot] = itemType.name;
+    state.equippedItems[itemType.slot] = itemType;
 
-    let index = state.yourTreasures.indexOf(itemType.name);
+    let index = state.yourTreasures.findIndex((t) => t.name === itemType.name);
 
     state.yourTreasures[index] = prevItemInSlot;
 
@@ -204,9 +222,9 @@ health: ${state.maxHealth}
   }
 
   if (inputText === "/craft Alligator knife") {
-    let haveStick = state.yourTreasures.some((t) => t === "Stick");
+    let haveStick = state.yourTreasures.some((t) => t.name === "Stick");
     let haveAlligatorTooth = state.yourTreasures.some(
-      (t) => t === "Alligator tooth"
+      (t) => t.name === "Alligator tooth"
     );
 
     if (!haveStick && !haveAlligatorTooth) {
@@ -227,7 +245,7 @@ health: ${state.maxHealth}
     deleteFromInv(["Stick", "Alligator tooth"]);
 
     outputText = "you crafted an Alligator knife";
-    state.yourTreasures.push("Alligator knife");
+    state.yourTreasures.push({ name: "Alligator knife" });
   }
 
   if (inputText === "?name") {
@@ -282,7 +300,7 @@ health: ${state.maxHealth}
     if (randExplore <= 6) {
       let treasureYouFound = weightedRandom(treasures, treasureWeights);
       state.yourTreasures.push(treasureYouFound);
-      outputText = `You have found ${treasureYouFound}!`;
+      outputText = `You have found ${treasureYouFound.name}!`;
     } else if (randExplore > 6 && randExplore <= 8) {
       outputText = "You have found nothing :/";
     } else {
@@ -293,7 +311,9 @@ health: ${state.maxHealth}
   }
 
   if (inputText === TREASURES) {
-    outputText = `Treasures: ${state.yourTreasures.join(", ")}
+    outputText = `Treasures: ${state.yourTreasures
+      .map((t) => t.name)
+      .join(", ")}
     `;
   }
 
@@ -370,6 +390,8 @@ function updateAlwaysUp() {
   } <hr /> <strong>Equipped Items</strong> <br /> ${Object.entries(
     state.equippedItems
   )
-    .map(([key, val]) => `<em>${key}</em>: ${val}`)
-    .join("<br />")}<hr />${state.yourTreasures.join(", ") && ""}`;
+    .map(([key, val]) => `<em>${key}</em>: ${val.name}`)
+    .join("<br />")}<hr />${
+    state.yourTreasures.map((t) => t.name).join(", ") && ""
+  }`;
 }
