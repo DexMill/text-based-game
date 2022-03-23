@@ -163,6 +163,7 @@ let state = savedState
       mana: 10,
       stamina: 10,
       maxStamina: 10,
+      miningSkill: 1,
       strength: 0,
       alligator: false,
       alligatorStr: 0,
@@ -411,6 +412,7 @@ health: ${state.maxHealth}
 
   if (inputText.startsWith("/u")) {
     let skillToUpgrade = inputText.split(" ")[1];
+
     if (skillToUpgrade === "s" && state.levelPoints >= 1) {
       state.strength = state.strength + 1;
       state.levelPoints = state.levelPoints - 1;
@@ -420,8 +422,14 @@ health: ${state.maxHealth}
     if (skillToUpgrade === "h" && state.levelPoints >= 1) {
       state.maxHealth = state.maxHealth + 1;
       state.health = state.maxHealth;
-      outputText = "You have upgrade Health";
       state.levelPoints = state.levelPoints - 1;
+      outputText = "You have upgrade Health";
+    }
+
+    if (skillToUpgrade === "m" && state.levelPoints >= 1) {
+      state.miningSkill = state.miningSkill + 1;
+      state.levelPoints = state.levelPoints - 1;
+      outputText = "You have upgrade Mining";
     }
   }
 
@@ -431,11 +439,11 @@ health: ${state.maxHealth}
 function updateAlwaysUp() {
   document.getElementById("always-up").innerHTML = `Health: ${
     state.health
-  } - Mana: ${state.mana} - Stamina: ${state.stamina} - coins ${
-    state.coins
-  } <br /> Location: ${state.charLoc} <br /> xp: ${state.xp} / ${
-    state.neededXp
-  } <br /> Level: ${
+  } - Mana: ${state.mana} - Stamina: ${state.stamina} - Mining: ${
+    state.miningSkill
+  } - coins ${state.coins} <br /> Location: ${state.charLoc} <br /> xp: ${
+    state.xp
+  } / ${state.neededXp} <br /> Level: ${
     state.level
   } <hr /> <strong>Equipped Items</strong> <br /> ${Object.entries(
     state.equippedItems
